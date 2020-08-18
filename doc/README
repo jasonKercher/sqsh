@@ -1,0 +1,417 @@
+                      Welcome to SQSH version 2.5.16
+
+Contents of this README file:
+
+1. Introduction
+2. Next release
+3. Bug reports
+4. Prebuild packages
+5. Build sqsh yourself
+6. Known issues
+   6.1 Sqsh on Cygwin using FreeTDS
+   6.2 Sqsh on Solaris x86_64
+7. Complete file list of the source package
+
+
+1. Introduction
+   Sqsh (pronounced skwish) is short for SQSHell (pronounced s-q-shell),
+   and is intended as a replacement for the venerable 'isql' program supplied
+   by Sybase. It came about due to years of frustration of trying to do real
+   work with a program that was never meant to perform real work.
+
+   Sqsh is much more than a nice prompt, it is intended to provide much of the
+   functionality provided by a good shell, such as variables, aliasing,
+   redirection, pipes, back-grounding, job control, history, command
+   substitution, and dynamic configuration. Also, as a by-product of the
+   design, it is remarkably easy to extend and add functionality. Build and
+   linked with Sybase CT-Library you can use sqsh to connect to SAP Sybase ASE,
+   Sybase IQ, Replication Server and any other Open Server application that
+   supports the TDS protocol. Build and linked with FreeTDS you can also use
+   sqsh to connect to a Microsoft SQL server.
+
+   This is the latest release of the sqsh project, source file "sqsh-2.5.16.tgz"
+   that is basically the same as "sqsh-2.5.tgz", but is OCS-16_0 aware. So if
+   you want to build sqsh using a SAP OpenClient 16 installation, you will need
+   this version.
+   This README file contains some basic instructions on howto install sqsh on
+   your computer. You may read the manual file INSTALL for more details on the
+   installation process and any installation requirements. The file CHANGES
+   contains a comprehensive explanation of what is new in this and previous
+   releases. Both files can be found in the zipped tarball sqsh-2.5.16.tgz.
+
+   Happy sqsh-ing,
+   Martin W.
+
+
+2. Next release
+   During the Isug-Tech 2014 in Atlanta from 14-17 April, the new SAP Sybase
+   ASE version 16.0 will be introduced. A new version of sqsh (sqsh-3.0) that
+   supports new features in the accompanying CT-Library will be released as
+   soon as possible but not later than June 2014.
+
+
+3. Bug Reports
+   Please report any bugs or observations out of the ordinary to
+   https://sourceforge.net/p/sqsh/bugs/ or drop me an e-mail at
+   mailto:mwesdorp@users.sourceforge.net.
+
+
+4. Prebuild packages
+   You can download a couple of binary packages from the Sourceforge website.
+   The packages can be found at:
+
+       https://sourceforge.net/projects/sqsh/files/sqsh/sqsh-2.5/
+
+       sqsh-2.5-el6.x86_64.syb157.tar.gz
+       sqsh-2.5-el5.x86_64.syb157.tar.gz
+       sqsh-2.5-1.el6.x86_64.x86_64.rpm
+       sqsh-2.5-1.el5.x86_64.x86_64.rpm
+
+   Currently there are four binary packages available for RHEL5 and RHEL6
+   type of servers, for example CentOS 5.10 and CentOS 6.5. The packages
+   with syb157 in the name requires a Sybase OpenClient 15.x installation and
+   a readline package installed as well.
+   You can install the package by unzipping and untarring the install files
+   in a temporary directory and run the install.sh script. For example:
+
+   $ cd /tmp
+   $ tar xzf ~/Downloads/sqsh-2.5-el6.x86_64.syb157.tar.gz
+   $ cd sqsh-2.5
+   $ ./install.sh
+
+   The script will ask you for the root installation directory of the package.
+   You can install the package in your home directory, e.g. /home/sybase, and
+   you don't need root authorization for this type of installation.
+
+   The rpm files require a freetds and a readline package present and can be
+   installed using the rpm package manager. The executable will be installed in
+   /usr/bin and documentation can be found in /usr/share/doc/sqsh-2.5.
+   With this binary you are also able to connect to a MSSQL server.
+
+   $ sudo rpm --install ~/Downloads/sqsh-2.5-1.el6.x86_64.x86_64.rpm
+
+   If you need a prebuild package for another OS or combination of Sybase or
+   FreeTDS with any other options included/excluded, please drop me an e-mail at
+   mailto:mwesdorp@users.sourceforge.net and I will see what I can do to support
+   your request.
+
+
+5. Build sqsh yourself
+   Download the zipped tar ball from Sourceforge to your client computer, in the
+   ~/Downloads directory for example. Use GNU tar to install/unpack the source
+   package (executable usually just named tar or gtar). For example:
+
+      $ cd $HOME
+      $ mkdir src
+      $ cd src
+      $ tar xzf ~/Downloads/sqsh-2.5.16.tgz
+      $ cd sqsh-2.5
+
+   To install sqsh it basically comes to running configure and make.
+   See the INSTALL file for more details. There is a script conf.sh in the root
+   directory ($HOME/src/sqsh-2.5/conf.sh) that may help you to set some
+   appropriate compiler flags and choose options to build a 32bit or 64bit
+   version of sqsh (depending on your platform of course). Eventually sqsh will
+   be installed in /usr/local by default. If you want to change that, you can
+   use the --prefix option of configure just to change the default, for example:
+
+        ./configure --prefix=/opt/software
+
+   You can run "./configure --help" for more info on available options.
+   You will definitely want sqsh with readline support enabled, so you will need
+   to install a GNU Readline development package. As a matter of fact, sqsh-2.5
+   enables --with-readline=yes by default in 'configure'. If you don't want
+   Readline support you need to specify:
+
+   ./configure --with-readline=no # or --without-readline
+
+   Make sure your SYBASE environment variables contains the correct base path of
+   the SYBASE installation. To enable sqsh to connect to a Microsoft SQL server,
+   you need to compile and link against FreeTDS and the SYBASE variable must
+   contain the installation prefix path of Freetds (usually
+   export SYBASE=/usr/local).
+   After you have run the script conf.sh or ./configure, you can check and adapt
+   the Makefile, src/Makefile, src/sqsh_parser/Makefile and src/config.h that
+   are created by configure, to your needs.
+
+   Then you can run make, make install, make install.man etc. So, just do:
+
+       $ export SYBASE=/opt/sybase
+       $ ./conf.sh
+       $ make
+       $ sudo make install
+       $ sudo make install.man
+       $ man sqsh
+
+   Well, reading the manual page will keep you busy for a while. :-)
+   In the doc directory an example for a .sqshrc can be found
+   that you can copy to your $HOME directory. During start-up, sqsh reads
+   this file to load default values for variables that controls the
+   behavior of sqsh, or installs additional functions, commands or aliases.
+   For example:
+
+       $ cp doc/sqshrc-2.5 $HOME/.sqshrc
+       $ chmod 600 $HOME/.sqshrc
+       $ mkdir tmp $HOME/.sqsh
+       $ chmod 700 $HOME/.sqsh
+
+   This sqshrc file assumes a $HOME/tmp directory exists for work files
+   and a $HOME/.sqsh directory exists to store history and readline_history
+   files, and you can also provide a sqsh_session file here for runtime
+   adjustments during connection setup to a server.
+
+   PLEASE NOTE, this sqshrc file sets a color prompt and text color, so
+   you have to make sure that the color scheme fits your terminal settings.
+   Make sure that the directory where the sqsh executable is installed is in
+   your PATH (by default this would be /usr/local/bin). If everything succeeded
+   you can now start sqsh and provide a servername, username and password as
+   you would do with isql.
+
+       $ sqsh -SSYBASE -Usybdba
+       Password:
+       [1] SYBASE.sybdba.master.1>
+
+
+6. Known issues
+
+6.1 Sqsh on Cygwin using FreeTDS
+    If you want to build sqsh on a Cygwin environment using FreeTDS, you first
+    have to build and install FreeTDS. If you have Cygwin64 then it is
+    recommended to install the libraries into a specific lib64 directory,
+    /usr/local/lib64 for example, to distinguish the 64 bit libraries from the
+    32 bit libraries in /usr/local/lib. You need to specify this location with
+    the configure script using the --libdir parameter.
+    The sqsh configure script expects a libct.so file in the libdir, but as
+    Cygwin does not use .so files (but ultimately dll files), you have to fool
+    sqsh by creating a dummy libct.so file.
+
+    $ export CFLAGS="-g -O2 -Wall -m64"
+    $ export LDFLAGS="-s -m64"
+    $ cd ~/src/freetds-0.91
+    $ ./configure --libdir=/usr/local/lib64
+    $ make
+    $ make install
+    $ touch /usr/local/lib64/libct.so
+    $ cd ~/src/sqsh-2.5
+    $ export SYBASE=/usr/local
+    $ ./configure
+    $ make
+    $ make install
+
+6.2 Sqsh on Solaris x86_64
+    Building sqsh on a mixed 32 and 64 bit platform is a real challenge as the
+    sqsh configure script might find 32 bit libraries for crypt, iconv and
+    pthread while you are building a 64 bit sqsh executable. In some specific
+    circumstances these libraries might be needed and that is why 'configure'
+    looks for their availability. If there are no 64 bit counterparts for these
+    libraries then the linker might fail and the configure script itself might
+    fail. To overcome this issue you must temporarily rename the 32 bit
+    libraries to enable 'configure' and 'make' to run successfully.
+    On one of my servers I had a 32 bit libcrypt.so library in /usr/lib and a 64
+    bit libcrypt_i.so in /usr/lib/amd64. By creating a symbolic link, I was able
+    to link sqsh with the crypt library and thus enable the \lock command using
+    my unix password to unlock the session. Also creating a symbolic link to the
+    amd64 directory in /usr/local/lib will make life for configure easier,
+    especially when using a 64 bit FreeTDS libct.a in /usr/local/lib64.
+
+    $ cd /usr/lib/amd64
+    $ sudo ln -s libcrypt_i.so.1 libcrypt.so
+    $ cd /usr/local
+    $ sudo ln -s lib/amd64 lib64
+    $ cd /usr
+    $ sudo ln -s lib/amd64 lib64
+
+    I also had to add the compat keyword to the password entry in the
+    /etc/nsswitch.conf file (passwd: files compat) to enable the call to the
+    getspnam() function. If this function returns NULL then sqsh would show
+    the message: "\lock: Unable to get shadow password" when you try to lock
+    the session with the \lock command. Note that the file /etc/shadow needs to
+    be readable for the world in order for this feature to work. As that might
+    lead to security issues it is better to undefine the HAVE_SHADOW_H and
+    HAVE_CRYPT in the src/config.h file after 'configure' completes, to disable
+    this feature.
+    In a next release I will probably add some controls to 'configure' to
+    enable or disable the use of /etc/password and/or /etc/shadow with crypt
+    in order to lock/unlock your session.
+
+
+7. Complete file list of the source package
+
+   The files contained in this source distribution are:
+
+   sqsh-2.5/aclocal.m4
+   sqsh-2.5/AUTHORS
+   sqsh-2.5/autoconf/config.guess
+   sqsh-2.5/autoconf/config.sub
+   sqsh-2.5/autoconf/install-man
+   sqsh-2.5/autoconf/install-sh
+   sqsh-2.5/autoconf/mkinstalldirs
+   sqsh-2.5/ChangeLog
+   sqsh-2.5/CHANGES
+   sqsh-2.5/configure
+   sqsh-2.5/configure.in
+   sqsh-2.5/conf.sh
+   sqsh-2.5/COPYING
+   sqsh-2.5/cygwin/config.h
+   sqsh-2.5/cygwin/cygwin64-syb15.sh
+   sqsh-2.5/cygwin/cygwin.sh
+   sqsh-2.5/cygwin/cygwin-syb15.sh
+   sqsh-2.5/cygwin/libblk.a
+   sqsh-2.5/cygwin/libcs.a
+   sqsh-2.5/cygwin/libct.a
+   sqsh-2.5/cygwin/libsybblk64.a
+   sqsh-2.5/cygwin/libsybblk.a
+   sqsh-2.5/cygwin/libsybcs64.a
+   sqsh-2.5/cygwin/libsybcs.a
+   sqsh-2.5/cygwin/libsybct64.a
+   sqsh-2.5/cygwin/libsybct.a
+   sqsh-2.5/cygwin/Makefile
+   sqsh-2.5/cygwin/Makefile-syb15
+   sqsh-2.5/cygwin/Makefile-syb15-x64
+   sqsh-2.5/cygwin/README
+   sqsh-2.5/doc/buildman.sh
+   sqsh-2.5/doc/FAQ
+   sqsh-2.5/doc/global.sqshrc
+   sqsh-2.5/doc/README.bin
+   sqsh-2.5/doc/sample.sqsh_m4
+   sqsh-2.5/doc/sqsh.1
+   sqsh-2.5/doc/sqsh.html
+   sqsh-2.5/doc/sqsh.pod
+   sqsh-2.5/doc/sqshrc-2.5
+   sqsh-2.5/filters/README
+   sqsh-2.5/filters/stats
+   sqsh-2.5/INSTALL
+   sqsh-2.5/Makefile.in
+   sqsh-2.5/README
+   sqsh-2.5/ReleaseNotes
+   sqsh-2.5/scripts/install.sh.in
+   sqsh-2.5/scripts/make_dist.sh
+   sqsh-2.5/scripts/make_wrapper.sh.in
+   sqsh-2.5/scripts/wrapper.sh.in
+   sqsh-2.5/src/alias.h
+   sqsh-2.5/src/cmd_alias.c
+   sqsh-2.5/src/cmd_bcp.c
+   sqsh-2.5/src/cmd_buf.c
+   sqsh-2.5/src/cmd_connect.c
+   sqsh-2.5/src/cmd_do.c
+   sqsh-2.5/src/cmd_echo.c
+   sqsh-2.5/src/cmd_exit.c
+   sqsh-2.5/src/cmd_for.c
+   sqsh-2.5/src/cmd_func.c
+   sqsh-2.5/src/cmd_go.c
+   sqsh-2.5/src/cmd.h
+   sqsh-2.5/src/cmd_help.c
+   sqsh-2.5/src/cmd_history.c
+   sqsh-2.5/src/cmd_if.c
+   sqsh-2.5/src/cmd_input.c
+   sqsh-2.5/src/cmd_input.h
+   sqsh-2.5/src/cmd_jobs.c
+   sqsh-2.5/src/cmd_kill.c
+   sqsh-2.5/src/cmd_lock.c
+   sqsh-2.5/src/cmd_loop.c
+   sqsh-2.5/src/cmd_misc.c
+   sqsh-2.5/src/cmd_misc.h
+   sqsh-2.5/src/cmd_read.c
+   sqsh-2.5/src/cmd_reconnect.c
+   sqsh-2.5/src/cmd_redraw.c
+   sqsh-2.5/src/cmd_reset.c
+   sqsh-2.5/src/cmd_return.c
+   sqsh-2.5/src/cmd_rpc.c
+   sqsh-2.5/src/cmd_run.c
+   sqsh-2.5/src/cmd_set.c
+   sqsh-2.5/src/cmd_shell.c
+   sqsh-2.5/src/cmd_show.c
+   sqsh-2.5/src/cmd_sleep.c
+   sqsh-2.5/src/cmd_wait.c
+   sqsh-2.5/src/cmd_warranty.c
+   sqsh-2.5/src/cmd_while.c
+   sqsh-2.5/src/config.h.in
+   sqsh-2.5/src/dsp_bcp.c
+   sqsh-2.5/src/dsp.c
+   sqsh-2.5/src/dsp_conv.c
+   sqsh-2.5/src/dsp_csv.c
+   sqsh-2.5/src/dsp_desc.c
+   sqsh-2.5/src/dsp.h
+   sqsh-2.5/src/dsp_horiz.c
+   sqsh-2.5/src/dsp_html.c
+   sqsh-2.5/src/dsp_meta.c
+   sqsh-2.5/src/dsp_none.c
+   sqsh-2.5/src/dsp_out.c
+   sqsh-2.5/src/dsp_pretty.c
+   sqsh-2.5/src/dsp_vert.c
+   sqsh-2.5/src/dsp_x.c
+   sqsh-2.5/src/Makefile.in
+   sqsh-2.5/src/sqsh_alias.c
+   sqsh-2.5/src/sqsh_alias.h
+   sqsh-2.5/src/sqsh_args.c
+   sqsh-2.5/src/sqsh_args.h
+   sqsh-2.5/src/sqsh_avl.c
+   sqsh-2.5/src/sqsh_avl.h
+   sqsh-2.5/src/sqsh_buf.c
+   sqsh-2.5/src/sqsh_buf.h
+   sqsh-2.5/src/sqsh_cmd.c
+   sqsh-2.5/src/sqsh_cmd.h
+   sqsh-2.5/src/sqsh_compat.c
+   sqsh-2.5/src/sqsh_compat.h
+   sqsh-2.5/src/sqsh_config.h
+   sqsh-2.5/src/sqsh_debug.c
+   sqsh-2.5/src/sqsh_debug.h
+   sqsh-2.5/src/sqsh_env.c
+   sqsh-2.5/src/sqsh_env.h
+   sqsh-2.5/src/sqsh_error.c
+   sqsh-2.5/src/sqsh_error.h
+   sqsh-2.5/src/sqsh_expand.c
+   sqsh-2.5/src/sqsh_expand.h
+   sqsh-2.5/src/sqsh_fd.c
+   sqsh-2.5/src/sqsh_fd.h
+   sqsh-2.5/src/sqsh_filter.c
+   sqsh-2.5/src/sqsh_filter.h
+   sqsh-2.5/src/sqsh_fork.c
+   sqsh-2.5/src/sqsh_fork.h
+   sqsh-2.5/src/sqsh_func.c
+   sqsh-2.5/src/sqsh_func.h
+   sqsh-2.5/src/sqsh_getopt.c
+   sqsh-2.5/src/sqsh_getopt.h
+   sqsh-2.5/src/sqsh_global.c
+   sqsh-2.5/src/sqsh_global.h
+   sqsh-2.5/src/sqsh_history.c
+   sqsh-2.5/src/sqsh_history.h
+   sqsh-2.5/src/sqsh_init.c
+   sqsh-2.5/src/sqsh_init.h
+   sqsh-2.5/src/sqsh_job.c
+   sqsh-2.5/src/sqsh_job.h
+   sqsh-2.5/src/sqsh_main.c
+   sqsh-2.5/src/sqsh_parser/Makefile.in
+   sqsh-2.5/src/sqsh_parser/sqsh_parser.c
+   sqsh-2.5/src/sqsh_parser/sqsh_parser.h
+   sqsh-2.5/src/sqsh_parser/tsql.c
+   sqsh-2.5/src/sqsh_parser/tsql.h
+   sqsh-2.5/src/sqsh_parser/tsql.l
+   sqsh-2.5/src/sqsh_parser/tsql.y
+   sqsh-2.5/src/sqsh_parser/tsql.yy.c
+   sqsh-2.5/src/sqsh_readline.c
+   sqsh-2.5/src/sqsh_readline.h
+   sqsh-2.5/src/sqsh_sig.c
+   sqsh-2.5/src/sqsh_sigcld.c
+   sqsh-2.5/src/sqsh_sigcld.h
+   sqsh-2.5/src/sqsh_sig.h
+   sqsh-2.5/src/sqsh_stdin.c
+   sqsh-2.5/src/sqsh_stdin.h
+   sqsh-2.5/src/sqsh_strchr.c
+   sqsh-2.5/src/sqsh_strchr.h
+   sqsh-2.5/src/sqsh_test.c
+   sqsh-2.5/src/sqsh_tok.c
+   sqsh-2.5/src/sqsh_tok.h
+   sqsh-2.5/src/sqsh_varbuf.c
+   sqsh-2.5/src/sqsh_varbuf.h
+   sqsh-2.5/src/var_ctlib.c
+   sqsh-2.5/src/var_date.c
+   sqsh-2.5/src/var_debug.c
+   sqsh-2.5/src/var_dsp.c
+   sqsh-2.5/src/var.h
+   sqsh-2.5/src/var_hist.c
+   sqsh-2.5/src/var_misc.c
+   sqsh-2.5/src/var_passwd.c
+   sqsh-2.5/src/var_readline.c
+   sqsh-2.5/src/var_thresh.c
+   /* The end */
