@@ -56,6 +56,7 @@ int var_set_style           _ANSI_ARGS(( env_t*, char*, char** )) ;
 int var_set_datetime        _ANSI_ARGS(( env_t*, char*, char** )) ;
 int var_set_rl_histsize     _ANSI_ARGS(( env_t*, char*, char** )) ;
 int var_set_fltfmt          _ANSI_ARGS(( env_t*, char*, char** )) ;
+int var_set_csv_colsep      _ANSI_ARGS(( env_t*, char*, char** )) ;
 int var_set_bcp_colsep      _ANSI_ARGS(( env_t*, char*, char** )) ;
 int var_set_bcp_rowsep      _ANSI_ARGS(( env_t*, char*, char** )) ;
 int var_set_bcp_trim        _ANSI_ARGS(( env_t*, char*, char** )) ;
@@ -77,6 +78,7 @@ int var_get_outputparms     _ANSI_ARGS(( env_t*, char*, char** )) ;
 int var_get_xgeom           _ANSI_ARGS(( env_t*, char*, char** )) ;
 int var_get_style           _ANSI_ARGS(( env_t*, char*, char** )) ;
 int var_get_datetime        _ANSI_ARGS(( env_t*, char*, char** )) ;
+int var_get_csv_colsep      _ANSI_ARGS(( env_t*, char*, char** )) ;
 int var_get_bcp_colsep      _ANSI_ARGS(( env_t*, char*, char** )) ;
 int var_get_bcp_rowsep      _ANSI_ARGS(( env_t*, char*, char** )) ;
 int var_get_bcp_trim        _ANSI_ARGS(( env_t*, char*, char** )) ;
@@ -106,6 +108,7 @@ static var_entry_t  sg_var_entry[] = {
     { "banner",           "1",           var_set_bool,        NULL            },
     { "batch_failcount",  "0",           var_set_add,         NULL            },
     { "batch_pause",      "0",           var_set_bool,        NULL            },
+    { "csv_colsep",       ",",           var_set_csv_colsep, var_get_csv_colsep},
     { "bcp_colsep",       "|",           var_set_bcp_colsep, var_get_bcp_colsep},
     { "bcp_rowsep",       "|",           var_set_bcp_rowsep, var_get_bcp_rowsep},
     { "bcp_trim",         "1",           var_set_bcp_trim,    var_get_bcp_trim},

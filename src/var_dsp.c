@@ -285,7 +285,7 @@ int var_get_style( env, var_name, var_value )
 
 	switch (style)
 	{
-		case DSP_HORIZ: 
+		case DSP_HORIZ:
 			*var_value = "horizontal";
 			break;
 		case DSP_VERT:
@@ -483,6 +483,43 @@ int var_get_colsep( env, var_name, var_value )
 	}
 
 	*var_value = colsep;
+	return True ;
+}
+
+int var_set_csv_colsep( env, var_name, var_value )
+	env_t    *env;
+	char     *var_name;
+	char     **var_value;
+{
+	if (var_set_esc( env, var_name, var_value ) == False)
+	{
+		return False;
+	}
+
+	if (dsp_prop( DSP_SET, DSP_CSV_COLSEP, (void*)(*var_value), DSP_NULLTERM ) != DSP_SUCCEED)
+	{
+		return False;
+	}
+
+	DBG(sqsh_debug(DEBUG_SCREEN,"var_set_csv_colsep: CSV column separator now set to %s\n", *var_value);)
+
+	return True ;
+}
+
+int var_get_csv_colsep( env, var_name, var_value )
+	env_t    *env;
+	char     *var_name;
+	char     **var_value;
+{
+	static char csv_colsep[32];
+
+	if (dsp_prop( DSP_GET, DSP_CSV_COLSEP, (void*)csv_colsep, sizeof(csv_colsep) ) != DSP_SUCCEED)
+	{
+		*var_value = NULL;
+		return False;
+	}
+
+	*var_value = csv_colsep;
 	return True ;
 }
 
@@ -688,7 +725,7 @@ int var_set_xgeom( env, var_name, var_value )
 
 	if (have_error == True)
 	{
-		sqsh_set_error( SQSH_E_INVAL, 
+		sqsh_set_error( SQSH_E_INVAL,
 		        "Invalid geometry, format must be WW or WWxHH" );
 		return False;
 	}

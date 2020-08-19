@@ -338,7 +338,7 @@ static int dsp_prop_set( prop, ptr, len )
 
 			g_dsp_props.p_colwidth = *((int*)ptr);
 			break;
-		
+
 		case DSP_FLOAT_PREC:
 			DBG(sqsh_debug(DEBUG_DISPLAY,
 				"dsp_prop: dsp_prop(DSP_SET, DSP_FLOAT_PREC, %d)\n", *((int*)ptr));)
@@ -436,7 +436,7 @@ static int dsp_prop_set( prop, ptr, len )
 				return DSP_FAIL;
 			}
 			break;
-		
+
 		case DSP_COLSEP:
 			DBG(sqsh_debug(DEBUG_DISPLAY,
 				"dsp_prop: dsp_prop(DSP_SET, DSP_COLSEP, '%s')\n",
@@ -462,6 +462,34 @@ static int dsp_prop_set( prop, ptr, len )
 
 			g_dsp_props.p_colsep[len] = '\0';
 			g_dsp_props.p_colsep_len = dsp_vlen( g_dsp_props.p_colsep );
+
+			break;
+
+		case DSP_CSV_COLSEP:
+			DBG(sqsh_debug(DEBUG_DISPLAY,
+				"dsp_prop: dsp_prop(DSP_SET, DSP_CSV_COLSEP, '%s')\n",
+				(ptr == NULL)?"NULL":((char*)ptr));)
+
+			if (ptr == NULL || strcasecmp (ptr, "default") == 0)
+				ptr = "|";        /* sqsh-2.5 - Set to default when ptr is NULL */
+
+			if (len == DSP_NULLTERM)
+			{
+				len = strlen( (char*)ptr );
+			}
+
+			if (len > MAX_SEPLEN || len < 0)
+			{
+				sqsh_set_error( SQSH_E_INVAL,
+					"Invalid length of csv col separator (between 0 and %d allowed)",
+					MAX_SEPLEN );
+				return DSP_FAIL;
+			}
+
+			strncpy( g_dsp_props.p_csv_colsep, (char*)ptr, len );
+
+			g_dsp_props.p_csv_colsep[len] = '\0';
+			g_dsp_props.p_csv_colsep_len = dsp_vlen( g_dsp_props.p_csv_colsep );
 
 			break;
 
@@ -535,7 +563,7 @@ static int dsp_prop_set( prop, ptr, len )
 				g_dsp_props.p_bcp_trim = True;
 			}
 			break;
-		
+
 		case DSP_LINESEP:
 			DBG(sqsh_debug(DEBUG_DISPLAY,
 				"dsp_prop: dsp_prop(DSP_SET, DSP_LINESEP, '%s')\n",
@@ -597,7 +625,7 @@ static int dsp_prop_set( prop, ptr, len )
 
 			g_dsp_props.p_maxlen = *((int*)ptr);
 			break;
-		
+
 		default:
 			sqsh_set_error( SQSH_E_EXIST, "Invalid property type" );
 			return DSP_FAIL;
@@ -707,12 +735,12 @@ static int dsp_prop_get( prop, ptr, len )
 
 			strncpy( (char*)ptr, dsp_timefmt_get(), len );
 			break;
-			
+
 		case DSP_STYLE:
 			DBG(sqsh_debug(DEBUG_DISPLAY,
 				"dsp_prop: dsp_prop(DSP_GET, DSP_STYLE) = %d\n",
 				g_dsp_props.p_style);)
-		
+
 			*((int*)ptr) = g_dsp_props.p_style;
 			break;
 
@@ -731,13 +759,21 @@ static int dsp_prop_get( prop, ptr, len )
 
 			*((int*)ptr) = g_dsp_props.p_outputparms;
 			break;
-		
+
 		case DSP_COLSEP:
 			DBG(sqsh_debug(DEBUG_DISPLAY,
 				"dsp_prop: dsp_prop(DSP_GET, DSP_COLSEP) = %s\n",
 				g_dsp_props.p_colsep);)
 
 			strncpy( (char*)ptr, g_dsp_props.p_colsep, len );
+			break;
+
+		case DSP_CSV_COLSEP:
+			DBG(sqsh_debug(DEBUG_DISPLAY,
+				"dsp_prop: dsp_prop(DSP_GET, DSP_CSV_COLSEP) = %s\n",
+				g_dsp_props.p_csv_colsep);)
+
+			strncpy( (char*)ptr, g_dsp_props.p_csv_colsep, len );
 			break;
 
 		case DSP_BCP_COLSEP:
@@ -763,7 +799,7 @@ static int dsp_prop_get( prop, ptr, len )
 
 			*((int*)ptr) = g_dsp_props.p_bcp_trim;
 			break;
-		
+
 		case DSP_LINESEP:
 			DBG(sqsh_debug(DEBUG_DISPLAY,
 				"dsp_prop: dsp_prop(DSP_GET, DSP_LINESEP) = %s\n",
@@ -793,7 +829,7 @@ static int dsp_prop_get( prop, ptr, len )
 
 			*((int*)ptr) = g_dsp_props.p_maxlen;
 			break;
-		
+
 		default:
 			sqsh_set_error( SQSH_E_EXIST, "Invalid property type" );
 			return DSP_FAIL;

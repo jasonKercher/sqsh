@@ -1,3 +1,42 @@
+                                            Changes in sqsh-3.0
+
+1 - Feature -     csv_colsep variable can now accessible via option -L.
+
+2 - Feature -     The option -s now also changes the value of bcp_colsep and csv_colsep.  Previously, this option
+                  only affected the colsep variable for the default display mode and would have no affect on other
+                  display modes.  For example, in order to change the value of bcp_colsep to a pipe, you manually
+                  needed to change the variable with the option -Lbcp_colsep='|'.  Now, you can just use the
+                  -s option: -s '|'.
+
+3 - Feature -     The -h option is used to disable headers and footers.  This option now also applies to the csv
+                  display mode. This option only had an affect on the default display mode.
+
+4 - Improvement - The csv display mode now follows the rules specified by RFC 4180.  Though not technically a
+                  standard, it is the most flexible and portable method for displaying delimited data.
+                  More info: https://www.ietf.org/rfc/rfc4180.txt
+
+
+                             All modified source files in release 3.0
+
+  sqsh/src/dsp.c         - Added functionality to adjust csv_colsep to the giant switch statement in the
+                           function dsp_prop_set.
+
+  sqsh/src/dsp_csv.c     - Added if statement to avoid printing header if the DSP_F_NOHEADERS flag was set.
+                           Also, a dynamically allocated static buffer was added to hold the output of the column.
+                           The size of the buffer is calculated as twice p_maxlen property since a field full of
+                           quotes could double in size. Added code to support RFC 4180 compliant output.
+
+  sqsh/src/sqsh_config.h - SQSH_VERSION was bumped to sqsh-3.0.
+
+  sqsh/src/sqsh_main.c   - Added functionality to adjust bcp_colsep and csv_colsep via -s option.
+
+  sqsh/src/var_dsp.c     - Added accessor/mutator methods for interacting with csv_colsep.
+
+  sqsh/src/dsp.h         - Added prototypes for methods added to var_dsp.c.  Also added their entries for these
+                           functions to the sg_var_entry array.
+
+
+
                                             Changes in sqsh-2.5, sqsh-2.5.16 and sqsh-2.5.16.1
 
                                 New features, improvements and bug fixes:
@@ -226,7 +265,7 @@
                       SYBASE.sa.master.1> select ...
                       SYBASE.sa.master.2> \go > ~/tmp/result.log
 
-                  but you could not use it in 
+                  but you could not use it in
 
                       SYBASE.sa.master.1> \set session="~/.sqsh/session.ini".
 

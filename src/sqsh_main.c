@@ -467,6 +467,8 @@ main( argc, argv )
                 break;
             case 's' :
                 ret = env_set( g_env, "colsep", sqsh_optarg );
+                ret = env_set( g_env, "bcp_colsep", sqsh_optarg );
+                ret = env_set( g_env, "csv_colsep", sqsh_optarg );
                 break;
             case 'S' :
                 ret = env_set( g_env, "DSQUERY", sqsh_optarg );

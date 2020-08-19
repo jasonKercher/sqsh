@@ -1,5 +1,5 @@
 /*
- * dsp_bcp.c - Display result set in separator delimited mode
+ * dsp_csv.c - Display result set in separator delimited mode
  *
  * Copyright (C) 1995, 1996 by Scott C. Gray
  *
@@ -27,6 +27,7 @@
 #include "sqsh_config.h"
 #include "sqsh_error.h"
 #include "sqsh_global.h"
+#include "sqsh_init.h"
 #include "sqsh_debug.h"
 #include "dsp.h"
 
@@ -65,112 +66,117 @@ int dsp_csv( output, cmd, flags )
      */
     while ((ret = ct_results( cmd, &result_type )) != CS_END_RESULTS)
     {
-	if (g_dsp_interrupted)
-	    return DSP_INTERRUPTED;
+        if (g_dsp_interrupted)
+            return DSP_INTERRUPTED;
 
-	if (ret != CS_SUCCEED)
-	    return DSP_FAIL;
+        if (ret != CS_SUCCEED)
+            return DSP_FAIL;
 
-	switch (result_type)
-	{
-	  case CS_STATUS_RESULT:
-	    while ((ret = ct_fetch( cmd,          /* Command */
-				    CS_UNUSED,    /* Type */
-				    CS_UNUSED,    /* Offset */
-				    CS_UNUSED,    /* Option */
-				    &nrows )) == CS_SUCCEED);
+        switch (result_type)
+        {
+          case CS_STATUS_RESULT:
+            while ((ret = ct_fetch( cmd,          /* Command */
+                                    CS_UNUSED,    /* Type */
+                                    CS_UNUSED,    /* Offset */
+                                    CS_UNUSED,    /* Option */
+                                    &nrows )) == CS_SUCCEED);
 
-	    if (ret != CS_END_DATA)
-	    {
-		return DSP_FAIL;
-	    }
-	    break;
-			
-	  case CS_PARAM_RESULT:
-	  case CS_ROW_RESULT:
-	  case CS_COMPUTE_RESULT:
-	    if (result_type == CS_PARAM_RESULT &&
-		g_dsp_props.p_outputparms == 0)
-	    {
-		while ((ret = ct_fetch( cmd, CS_UNUSED, CS_UNUSED, CS_UNUSED,
-					&nrows )) == CS_SUCCEED);
-					
-		if (ret != CS_END_DATA)
-		{
-		    return DSP_FAIL;
-		}
+            if (ret != CS_END_DATA)
+            {
+                return DSP_FAIL;
+            }
+            break;
 
-		break;
-	    }
+          case CS_PARAM_RESULT:
+          case CS_ROW_RESULT:
+          case CS_COMPUTE_RESULT:
+            if (result_type == CS_PARAM_RESULT &&
+                g_dsp_props.p_outputparms == 0)
+            {
+                while ((ret = ct_fetch( cmd, CS_UNUSED, CS_UNUSED, CS_UNUSED,
+                                        &nrows )) == CS_SUCCEED);
 
-	    desc = dsp_desc_bind( cmd, result_type );
+                if (ret != CS_END_DATA)
+                {
+                    return DSP_FAIL;
+                }
 
-	    if (desc == NULL)
-		return DSP_FAIL;
+                break;
+            }
 
-	    /* Display header */
-	    for (i = 0; i < desc->d_ncols; i++)
-	    {
-		col = &desc->d_cols[i];
-                    
-		if (col->c_format.namelen > 0)
-		{
-		    dsp_fputs( col->c_format.name, output );
-		}
-		if(i < desc->d_ncols - 1) {
-		    dsp_fputs(g_dsp_props.p_csv_colsep, output );
-		}
-	    }
-	    dsp_fputs("\n", output );
+            desc = dsp_desc_bind( cmd, result_type );
 
-	    while ((ret = dsp_desc_fetch( cmd, desc )) == CS_SUCCEED)
-	    {
-		if (g_dsp_interrupted)
-		{
-		    dsp_desc_destroy( desc );
-		    return DSP_INTERRUPTED;
-		}
+            if (desc == NULL)
+                return DSP_FAIL;
 
-		for (i = 0; i < desc->d_ncols; i++)
-		{
-		    if (desc->d_cols[i].c_nullind == 0)
-		    {
-			dsp_col( output, 
-				 desc->d_cols[i].c_data,
-				 strlen( desc->d_cols[i].c_data ) );
-		    }
-		    else
-		    {
-			dsp_col( output, "", 0 );
-		    }
+            /* Display header */
+	    if (!(flags & DSP_F_NOHEADERS))
+            {
+                for (i = 0; i < desc->d_ncols; i++)
+                {
+                    col = &desc->d_cols[i];
 
-		    if (i < (desc->d_ncols-1))
-		    {
-			dsp_fputs( g_dsp_props.p_csv_colsep, output );
-		    }
-		}
+                    if (col->c_format.namelen > 0)
+                    {
+                        dsp_col( output,
+                                   col->c_format.name,
+                                   strlen(col->c_format.name) );
+                    }
+                    if(i < desc->d_ncols - 1) {
+                        dsp_fputs(g_dsp_props.p_csv_colsep, output );
+                    }
+                }
+                dsp_fputs("\n", output );
+            }
 
-		/*dsp_fputs( g_dsp_props.p_bcp_rowsep, output );*/
-		dsp_fputc( '\n', output );
+            while ((ret = dsp_desc_fetch( cmd, desc )) == CS_SUCCEED)
+            {
+                if (g_dsp_interrupted)
+                {
+                    dsp_desc_destroy( desc );
+                    return DSP_INTERRUPTED;
+                }
 
-		if (g_dsp_interrupted)
-		{
-		    dsp_desc_destroy( desc );
-		    return DSP_INTERRUPTED;
-		}
-	    }
+                for (i = 0; i < desc->d_ncols; i++)
+                {
+                    if (desc->d_cols[i].c_nullind == 0)
+                    {
+                        dsp_col( output,
+                                 desc->d_cols[i].c_data,
+                                 strlen( desc->d_cols[i].c_data ) );
+                    }
+                    else
+                    {
+                        dsp_col( output, "", 0 );
+                    }
 
-	    dsp_desc_destroy( desc );
+                    if (i < (desc->d_ncols-1))
+                    {
+                        dsp_fputs( g_dsp_props.p_csv_colsep, output );
+                    }
+                }
 
-	    if (ret != CS_END_DATA)
-	    {
-		return DSP_FAIL;
-	    }
-	    break;
-			
-	  default:
-	    break;
-	}
+                /*dsp_fputs( g_dsp_props.p_bcp_rowsep, output );*/
+                dsp_fputc( '\n', output );
+
+                if (g_dsp_interrupted)
+                {
+                    dsp_desc_destroy( desc );
+                    return DSP_INTERRUPTED;
+                }
+            }
+
+            dsp_desc_destroy( desc );
+
+            if (ret != CS_END_DATA)
+            {
+                return DSP_FAIL;
+            }
+            break;
+
+          default:
+            break;
+        }
     }
 
     return DSP_SUCCEED;
@@ -187,33 +193,67 @@ static void dsp_col( output, col_value, col_width )
 {
     char    *end;
 
+    /*
+     * Buffer is used to build the output field.
+     * A field full of quotes could double in size.
+     */
+    static char* buffer;
+
+    if (!buffer && !(buffer = malloc(2 * g_dsp_props.p_maxlen))) {
+        fputs("Memory allocation failure", stderr); /* SQSH_E_NOMEM */
+        sqsh_exit(255);
+    }
+
     if (col_width > 0)
     {
-	/*
-	 * Traverse backwards over any whitespace that we find.
-	 */
-	end = (col_value + col_width - 1);
+        /*
+         * Traverse backwards over any whitespace that we find.
+         */
+        end = (col_value + col_width - 1);
 
-	if (g_dsp_props.p_bcp_trim == True)
-	{
-	    for (; end >= col_value && (*end == '\0' || isspace((int)*end));
-		 --end);
-	}
+        if (g_dsp_props.p_bcp_trim == True)
+        {
+            for (; end >= col_value && (*end == '\0' || isspace((int)*end));
+                 --end);
+        }
 
-	/* FIXME
-	   Check for numeric only fields so that you don't have to quote
-	   everything... */
-	if (end > col_value || (end == col_value && !isspace((int)*end))) {
-	    dsp_fputc('"', output);
-	    for (; col_value <= end; ++col_value)
-	    {
+        int quoting = False; /* Whether or not field will be quoted */
+        int buf_index = 0;   /* Index for building buffer field. */
+        int sep_index = 0;   /* Index for tracking csv_colsep */
+
+        if (end > col_value || (end == col_value && !isspace((int)*end))) {
+            for (; col_value <= end; ++col_value)
+            {
                 /* sqsh-2.1.9 - Bug fix 3525302 */
-		if (*col_value == '"')
-		    dsp_fputc('"', output);
-		dsp_fputc( *col_value, output );
-	    }
-	    dsp_fputc('"', output);
-	}
+                if (*col_value == '"') {
+                    quoting = True;
+                    buffer[buf_index++] = '"';
+                }
+                if (!quoting)
+                {
+                    if (*col_value == '\n' || *col_value == '\r')
+                        quoting = True;
+                    else if (*col_value == g_dsp_props.p_csv_colsep[sep_index])
+                        ++sep_index;
+                    else if (*col_value == g_dsp_props.p_csv_colsep[0])
+                        sep_index = 1;
+                    else
+                        sep_index = 0;
+
+                    if (sep_index == g_dsp_props.p_csv_colsep_len)
+                        quoting = True;
+                }
+
+                buffer[buf_index++] = *col_value;
+            }
+
+            buffer[buf_index] = '\0';
+
+            if (quoting)
+                dsp_fprintf(output, "\"%s\"", buffer);
+            else
+                dsp_fputs(buffer, output);
+        }
     }
 
     return;
